@@ -1,3 +1,5 @@
+# To ensure that project is installed in editable mode, we need to add -e . in the requirements.txt file. This will allow us to make changes to the code and see the changes reflected without having to reinstall the package every time.
+# The -e and requirements .txt file is used to specify dwhich dependencies to install
 from setuptools import setup, find_packages
 from typing import List
 

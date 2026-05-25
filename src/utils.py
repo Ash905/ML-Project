@@ -1,0 +1,1 @@
+#A generic code to operate in whole program file like  extracting database form mongo db 

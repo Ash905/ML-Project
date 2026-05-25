@@ -1,0 +1,1 @@
+# Transformation techniques like changing categorical to numerical & one hot encoding / label encoding

@@ -34,10 +34,14 @@ class DataIngestion:
         try:
             df = pd.read_csv('notebook/data/stud.csv')
             logging.info("Read the dataset as dataframe")  
+           
             os.makedirs(os.path.dirname(self.ingestion_config.train_data_path),exist_ok=True) # This will create the directory if it does not exist, and if it already exists, it will do nothing (exist_ok=True)
 
+           
             df.to_csv(self.ingestion_config.raw_data_path,index=False,header=True) # Raw data is stored in raw_data_path
+           
             train_set, test_set = train_test_split(df, test_size=0.2, random_state=42) # This will split the data into train and test set with 80% and 20% respectively
+           
             train_set.to_csv(self.ingestion_config.train_data_path,index=False,header=True) # Train data is stored in train_data_path
             
             test_set.to_csv(self.ingestion_config.test_data_path,index=False,header=True) # Test data is stored in test_data_path

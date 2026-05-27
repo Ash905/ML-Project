@@ -5,7 +5,6 @@ scikit-learn
 seaborn
 tensorflow
 keras
-sklearn
 catboost
 xgboost
 Flask>=2.2.3,<3

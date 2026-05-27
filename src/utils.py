@@ -3,7 +3,10 @@ import sys
 
 import numpy as np 
 import pandas as pd
-import dill
+try:
+    import dill
+except Exception:
+    dill = None
 import pickle
 from sklearn.metrics import r2_score
 from sklearn.model_selection import GridSearchCV
@@ -22,38 +25,52 @@ def save_object(file_path, obj):
     except Exception as e:
         raise CustomException(e, sys)
     
-def evaluate_models(X_train, y_train, X_test, y_test, models, params=None, cv=3, n_jobs=-1, verbose=0, refit=True):
+def evaluate_models(X_train, y_train, X_test, y_test, models, params, cv=3, scoring=None, n_jobs=-1):
+    """
+    Evaluate multiple models using GridSearchCV and return a detailed report.
+
+    Args:
+        X_train, y_train, X_test, y_test: training and test data
+        models: dict of name -> estimator
+        params: dict of name -> param grid for GridSearchCV
+        cv: cross-validation folds
+        scoring: scoring string or callable passed to GridSearchCV
+        n_jobs: parallel jobs for GridSearchCV
+
+    Returns:
+        report: dict mapping model name -> dict with 'train_score', 'test_score', 'best_params'
+    """
     try:
         report = {}
-        params = params or {}
+        param = params
 
-        for i in range(len(list(models))):
-            model_name = list(models.keys())[i]
-            model = list(models.values())[i]
-            param_grid = params.get(model_name, {})
+        for name, model in models.items():
+            param_grid = params.get(name, {})
 
             if param_grid:
-                gs = GridSearchCV(
-                    model,
-                    param_grid,
-                    cv=cv,
-                    n_jobs=n_jobs,
-                    verbose=verbose,
-                    refit=refit,
-                )
+                gs = GridSearchCV(model, param_grid, cv=cv, scoring=scoring, n_jobs=n_jobs, refit=True)
                 gs.fit(X_train, y_train)
-                model.set_params(**gs.best_params_)
-                model.fit(X_train, y_train)
+                best_model = gs.best_estimator_
+                best_params = gs.best_params_
             else:
-                model.fit(X_train, y_train)
+                # If no param grid provided, just fit the model as-is
+                best_model = model
+                best_model.fit(X_train, y_train)
+                best_params = {}
 
-            y_train_pred = model.predict(X_train)
-            y_test_pred = model.predict(X_test)
+            # Predictions
+            y_train_pred = best_model.predict(X_train)
+            y_test_pred = best_model.predict(X_test)
 
+            # Scores
             train_model_score = r2_score(y_train, y_train_pred)
             test_model_score = r2_score(y_test, y_test_pred)
 
-            report[model_name] = test_model_score
+            report[name] = {
+                "train_score": float(train_model_score),
+                "test_score": float(test_model_score),
+                "best_params": best_params,
+            }
 
         return report
 

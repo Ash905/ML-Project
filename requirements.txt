@@ -8,5 +8,6 @@ keras
 sklearn
 catboost
 xgboost
+Flask>=2.2.3,<3
 dill
 # -e .
